@@ -1,0 +1,12 @@
+com\example\backtestapp\exception\GlobalExceptionHandler.class
+com\example\backtestapp\model\MonthlyData.class
+com\example\backtestapp\model\BacktestRequest.class
+com\example\backtestapp\service\BacktestService.class
+com\example\backtestapp\controller\BacktestController.class
+com\example\backtestapp\model\BacktestResponse$CombinedResult.class
+com\example\backtestapp\model\BacktestResponse.class
+com\example\backtestapp\model\SymbolResult.class
+com\example\backtestapp\model\BacktestResult$MonthlyData.class
+com\example\backtestapp\BacktestApplication.class
+com\example\backtestapp\model\SymbolRequest.class
+com\example\backtestapp\model\BacktestResult.class

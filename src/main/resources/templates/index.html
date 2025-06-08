@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>投資バックテストシミュレーター</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+        }
+        .container {
+            max-width: 1100px;
+            background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            padding: 2.5rem;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .header-title {
+            text-align: center;
+            padding: 2rem 0;
+            background: linear-gradient(120deg, #1a7454 0%, #4387d1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            font-size: 2.8rem;
+        }
+        .card {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+        }
+        .card-header {
+            background: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+            color: #fff;
+            font-weight: 700;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            padding: 0.75rem 1.25rem;
+        }
+        .btn-primary {
+            background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+            border: none;
+            font-weight: 700;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 4px 15px rgba(132, 250, 176, 0.4);
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            border-radius: 50px;
+        }
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #84fab0;
+            box-shadow: 0 0 0 0.25rem rgba(132, 250, 176, 0.25);
+        }
+        #result-section h3, #result-section h4 {
+            color: #555;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-align: center;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #84fab0;
+        }
+        table {
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        table td {
+            font-weight: 500;
+        }
+        table tr:last-child td {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body class="container mt-5">
+    <h1 class="header-title">投資バックテストシミュレーター</h1>
+    
+    <!-- エラーメッセージ表示エリア -->
+    <div id="errorAlert" class="alert alert-danger" style="display: none;">
+        <strong>エラー:</strong> <span id="errorMessage"></span>
+    </div>
+    
+    <!-- 入力フォームセクション -->
+    <div class="row">
+        <div class="col-12">
+            <form id="backtestForm" class="mb-4">
+                <div class="row">
+                    <div class="col-12">
+                        <h4>期間設定</h4>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="startDate" class="form-label">開始日</label>
+                                <input type="date" class="form-control" id="startDate" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="endDate" class="form-label">終了日</label>
+                                <input type="date" class="form-control" id="endDate" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="symbol-inputs">
+                    <!-- 銘柄入力欄がここに追加されます -->
+                </div>
+
+                <div class="d-grid gap-2 mb-3">
+                    <button type="button" id="add-symbol-btn" class="btn btn-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                        </svg>
+                        銘柄を追加
+                    </button>
+                </div>
+
+                <div class="form-text mb-3">
+                    ※ stooqで提供されている代表的な銘柄を選択できます。
+                    カッコ内は実際の銘柄コードです。
+                </div>
+
+                <button type="submit" class="btn btn-primary">バックテスト実行</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 結果表示セクション -->
+    <div id="result-section" style="display: none;">
+        <div class="row mt-4">
+            <!-- 結果テーブル -->
+            <div class="col-md-6">
+                <div id="results1" style="display: none;">
+                    <h3>バックテスト結果</h3>
+                    <table class="table">
+                        <tr>
+                            <td>総投資額</td>
+                            <td id="totalInvestment1"></td>
+                        </tr>
+                        <tr>
+                            <td>最終ポートフォリオ価値</td>
+                            <td id="finalValue1"></td>
+                        </tr>
+                        <tr>
+                            <td>トータルリターン</td>
+                            <td id="totalReturn1"></td>
+                        </tr>
+                        <tr>
+                            <td>年率リターン</td>
+                            <td id="annualizedReturn1"></td>
+                        </tr>
+                        <tr>
+                            <td>シャープレシオ</td>
+                            <td id="sharpeRatio1"></td>
+                        </tr>
+                    </table>
+                </div>
+    
+                <div id="resultsCombined" style="display: none;">
+                    <h3>バックテスト結果（合算）</h3>
+                    <table class="table">
+                        <tr>
+                            <td>総投資額</td>
+                            <td id="totalInvestmentCombined"></td>
+                        </tr>
+                        <tr>
+                            <td>最終ポートフォリオ価値</td>
+                            <td id="finalValueCombined"></td>
+                        </tr>
+                        <tr>
+                            <td>トータルリターン</td>
+                            <td id="totalReturnCombined"></td>
+                        </tr>
+                        <tr>
+                            <td>年率リターン</td>
+                            <td id="annualizedReturnCombined"></td>
+                        </tr>
+                        <tr>
+                            <td>シャープレシオ</td>
+                            <td id="sharpeRatioCombined"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <!-- 資産配分円グラフ -->
+            <div class="col-md-6">
+                <div id="allocationChartContainer" style="display: none;">
+                    <h4 class="text-center">最終資産配分</h4>
+                    <canvas id="allocationChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- ポートフォリオ推移グラフ -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <canvas id="portfolioChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chart = null;
+        let allocationChart = null;
+        const symbolToNameMap = {};
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- CONSTANTS ---
+            const MAX_SYMBOLS = 5;
+            const symbolOptionsHtml = `
+                <option value="">選択してください</option>
+                <optgroup label="米国指数">
+                    <option value="^SPX">S&P 500 (^SPX)</option>
+                    <option value="^NDX">NASDAQ 100 (^NDX)</option>
+                    <option value="^DJI">ダウ工業株30種 (^DJI)</option>
+                </optgroup>
+                <optgroup label="グローバル指数">
+                    <option value="^NKX">日経225 (^NKX)</option>
+                    <option value="^TPX">TOPIX (^TPX)</option>
+                    <option value="^HSI">ハンセン指数 (^HSI)</option>
+                    <option value="^SNX">SENSEX30 (^SNX)</option>
+                </optgroup>
+                <optgroup label="商品・仮想通貨">
+                    <option value="XAUUSD">金 (XAUUSD)</option>
+                    <option value="BTC.V">ビットコイン (BTC.V)</option>
+                </optgroup>
+                <optgroup label="S&P 500 上位銘柄">
+                    <option value="MSFT.US">Microsoft (MSFT.US)</option>
+                    <option value="AAPL.US">Apple (AAPL.US)</option>
+                    <option value="NVDA.US">NVIDIA (NVDA.US)</option>
+                    <option value="AMZN.US">Amazon (AMZN.US)</option>
+                    <option value="GOOGL.US">Alphabet A (GOOGL.US)</option>
+                    <option value="META.US">Meta Platforms (META.US)</option>
+                    <option value="GOOG.US">Alphabet C (GOOG.US)</option>
+                    <option value="BRK-B.US">Berkshire Hathaway B (BRK-B.US)</option>
+                    <option value="LLY.US">Eli Lilly (LLY.US)</option>
+                    <option value="JPM.US">JPMorgan Chase (JPM.US)</option>
+                    <option value="V.US">Visa (V.US)</option>
+                    <option value="XOM.US">Exxon Mobil (XOM.US)</option>
+                    <option value="UNH.US">UnitedHealth Group (UNH.US)</option>
+                    <option value="MA.US">Mastercard (MA.US)</option>
+                    <option value="JNJ.US">Johnson & Johnson (JNJ.US)</option>
+                    <option value="PG.US">Procter & Gamble (PG.US)</option>
+                    <option value="AVGO.US">Broadcom (AVGO.US)</option>
+                    <option value="HD.US">Home Depot (HD.US)</option>
+                    <option value="TSLA.US">Tesla (TSLA.US)</option>
+                    <option value="COST.US">Costco (COST.US)</option>
+                </optgroup>
+                <optgroup label="日経225 上位銘柄">
+                    <option value="8035.JP">東京エレクトロン (8035.JP)</option>
+                    <option value="9983.JP">ファーストリテイリング (9983.JP)</option>
+                    <option value="6857.JP">アドバンテスト (6857.JP)</option>
+                    <option value="9984.JP">ソフトバンクグループ (9984.JP)</option>
+                    <option value="6098.JP">リクルートホールディングス (6098.JP)</option>
+                    <option value="9433.JP">KDDI (9433.JP)</option>
+                    <option value="6954.JP">ファナック (6954.JP)</option>
+                    <option value="6594.JP">日本電産 (6594.JP)</option>
+                    <option value="4519.JP">中外製薬 (4519.JP)</option>
+                    <option value="8058.JP">三菱商事 (8058.JP)</option>
+                    <option value="6758.JP">ソニーグループ (6758.JP)</option>
+                    <option value="7203.JP">トヨタ自動車 (7203.JP)</option>
+                    <option value="4063.JP">信越化学工業 (4063.JP)</option>
+                    <option value="6367.JP">ダイキン工業 (6367.JP)</option>
+                    <option value="7974.JP">任天堂 (7974.JP)</option>
+                    <option value="9432.JP">日本電信電話 (9432.JP)</option>
+                    <option value="8306.JP">三菱UFJフィナンシャル・グループ (8306.JP)</option>
+                    <option value="6902.JP">デンソー (6902.JP)</option>
+                    <option value="6981.JP">村田製作所 (6981.JP)</option>
+                    <option value="7267.JP">本田技研工業 (7267.JP)</option>
+                </optgroup>
+            `;
+
+            // Populate the map from HTML options
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = symbolOptionsHtml;
+            tempDiv.querySelectorAll('option').forEach(option => {
+                if (option.value) {
+                    const name = option.text.split('(')[0].trim();
+                    symbolToNameMap[option.value] = name;
+                }
+            });
+
+            // --- FUNCTIONS ---
+            function updateSymbolBlocks() {
+                const symbolBlocks = document.querySelectorAll('#symbol-inputs .symbol-block');
+                symbolBlocks.forEach((block, index) => {
+                    const symbolId = index + 1;
+                    const isRequired = symbolId === 1;
+
+                    block.id = `symbol-block-${symbolId}`;
+                    
+                    const h4 = block.querySelector('h4');
+                    h4.innerHTML = `銘柄 ${symbolId} ${isRequired ? '(必須)' : '(任意)'} <span class="symbol-name-display"></span>`;
+
+                    const removeBtn = block.querySelector('.remove-symbol-btn');
+                    if (removeBtn) {
+                        removeBtn.style.display = isRequired ? 'none' : 'block';
+                        removeBtn.onclick = () => removeSymbolBlock(symbolId);
+                    }
+
+                    const symbolSelect = block.querySelector('select');
+                    symbolSelect.id = `symbol${symbolId}`;
+                    symbolSelect.required = isRequired;
+                    symbolSelect.onchange = (e) => {
+                        const selectedOption = e.target.options[e.target.selectedIndex];
+                        const symbolText = selectedOption.value ? selectedOption.text.split('(')[0].trim() : '';
+                        block.querySelector('.symbol-name-display').textContent = symbolText;
+                    };
+
+
+                    block.querySelector(`label[for^='initialInvestment']`).setAttribute('for', `initialInvestment${symbolId}`);
+                    block.querySelector(`input[id^='initialInvestment']`).id = `initialInvestment${symbolId}`;
+                    block.querySelector(`input[id^='initialInvestment']`).required = isRequired;
+
+                    block.querySelector(`label[for^='monthlyInvestment']`).setAttribute('for', `monthlyInvestment${symbolId}`);
+                    block.querySelector(`input[id^='monthlyInvestment']`).id = `monthlyInvestment${symbolId}`;
+                    block.querySelector(`input[id^='monthlyInvestment']`).required = isRequired;
+                });
+
+                document.getElementById('add-symbol-btn').style.display = symbolBlocks.length >= MAX_SYMBOLS ? 'none' : 'block';
+            }
+
+            function addSymbolBlock() {
+                const symbolBlocks = document.querySelectorAll('#symbol-inputs .symbol-block');
+                if (symbolBlocks.length >= MAX_SYMBOLS) return;
+
+                const newBlockHtml = `
+                    <div class="card mb-3 symbol-block">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h4></h4>
+                            <button type="button" class="btn-close remove-symbol-btn"></button>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">バックテスト対象銘柄を選択</label>
+                                <select class="form-select">${symbolOptionsHtml}</select>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label" for="initialInvestment1">初期投資額（円）</label>
+                                    <input type="number" class="form-control" value="10000" id="initialInvestment1">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label" for="monthlyInvestment1">毎月の積立額（円）</label>
+                                    <input type="number" class="form-control" value="1000" id="monthlyInvestment1">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('symbol-inputs').insertAdjacentHTML('beforeend', newBlockHtml);
+                updateSymbolBlocks();
+            }
+
+            function removeSymbolBlock(symbolId) {
+                document.getElementById(`symbol-block-${symbolId}`).remove();
+                updateSymbolBlocks();
+            }
+
+            const chartAreaBackgroundColorPlugin = {
+                id: 'chartAreaBackgroundColor',
+                beforeDraw(chart, args, pluginOptions) {
+                    if (pluginOptions.color) {
+                        const { ctx, chartArea } = chart;
+                        if (!chartArea) {
+                            return;
+                        }
+                        ctx.save();
+                        ctx.fillStyle = pluginOptions.color;
+                        ctx.fillRect(chartArea.left, chartArea.top, chartArea.width, chartArea.height);
+                        ctx.restore();
+                    }
+                }
+            };
+            Chart.register(chartAreaBackgroundColorPlugin);
+
+            function displayResults(result) {
+                // UIリセット
+                document.getElementById('result-section').style.display = 'block';
+                document.getElementById('results1').style.display = 'none';
+                document.getElementById('resultsCombined').style.display = 'none';
+                document.getElementById('allocationChartContainer').style.display = 'none';
+
+                if (chart) {
+                    chart.destroy();
+                }
+                if (allocationChart) {
+                    allocationChart.destroy();
+                }
+                
+                const ctx = document.getElementById('portfolioChart').getContext('2d');
+                const options = {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return new Intl.NumberFormat('ja-JP', {
+                                        style: 'currency',
+                                        currency: 'JPY',
+                                        maximumFractionDigits: 0
+                                    }).format(value);
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        chartAreaBackgroundColor: {
+                            color: '#ffffff'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + 
+                                           new Intl.NumberFormat('ja-JP', {
+                                               style: 'currency',
+                                               currency: 'JPY',
+                                               maximumFractionDigits: 0
+                                           }).format(context.parsed.y);
+                                }
+                            }
+                        }
+                    }
+                };
+
+                // Case: Multiple symbols (combined result exists)
+                if (result.combinedResult) {
+                    document.getElementById('resultsCombined').style.display = 'block';
+                    document.getElementById('totalInvestmentCombined').textContent = formatCurrency(result.combinedResult.totalInvestment);
+                    document.getElementById('finalValueCombined').textContent = formatCurrency(result.combinedResult.finalValue);
+                    document.getElementById('totalReturnCombined').textContent = formatPercentage(result.combinedResult.totalReturn);
+                    document.getElementById('annualizedReturnCombined').textContent = formatPercentage(result.combinedResult.annualizedReturn);
+                    document.getElementById('sharpeRatioCombined').textContent = result.combinedResult.sharpeRatio.toFixed(2);
+
+                    chart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: result.combinedResult.monthlyData.map(d => d.date),
+                            datasets: [
+                                {
+                                    label: '合算投資額',
+                                    data: result.combinedResult.monthlyData.map(d => d.investment),
+                                    borderColor: 'rgb(75, 192, 192)',
+                                    fill: false
+                                },
+                                {
+                                    label: '合算ポートフォリオ価値',
+                                    data: result.combinedResult.monthlyData.map(d => d.portfolioValue),
+                                    borderColor: 'rgb(255, 99, 132)',
+                                    fill: false
+                                }
+                            ]
+                        },
+                        options: options
+                    });
+
+                    // Allocation Pie Chart
+                    const allocationCtx = document.getElementById('allocationChart').getContext('2d');
+                    document.getElementById('allocationChartContainer').style.display = 'block';
+                    
+                    const pieLabels = result.results.map(r => symbolToNameMap[r.symbol] || r.symbol);
+                    const pieData = result.results.map(r => r.finalValue);
+
+                    allocationChart = new Chart(allocationCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: pieLabels,
+                            datasets: [{
+                                data: pieData,
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.8)',
+                                    'rgba(54, 162, 235, 0.8)',
+                                    'rgba(255, 206, 86, 0.8)',
+                                    'rgba(75, 192, 192, 0.8)',
+                                    'rgba(153, 102, 255, 0.8)'
+                                ],
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const label = context.label || '';
+                                            const value = context.parsed || 0;
+                                            const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                            const percentage = total > 0 ? (value / total * 100).toFixed(2) : 0;
+                                            return `${label}: ${formatCurrency(value)} (${percentage}%)`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } 
+                // Case: One symbol
+                else if (result.results && result.results.length > 0) {
+                    const result1 = result.results[0];
+                    const results1Div = document.getElementById('results1');
+                    results1Div.style.display = 'block';
+                    const symbolDisplayName = symbolToNameMap[result1.symbol] || result1.symbol;
+                    results1Div.querySelector('h3').textContent = `バックテスト結果（${symbolDisplayName}）`;
+                    
+                    document.getElementById('totalInvestment1').textContent = formatCurrency(result1.totalInvestment);
+                    document.getElementById('finalValue1').textContent = formatCurrency(result1.finalValue);
+                    document.getElementById('totalReturn1').textContent = formatPercentage(result1.totalReturn);
+                    document.getElementById('annualizedReturn1').textContent = formatPercentage(result1.annualizedReturn);
+                    document.getElementById('sharpeRatio1').textContent = result1.sharpeRatio.toFixed(2);
+
+                    chart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: result1.monthlyData.map(d => d.date),
+                            datasets: [
+                                {
+                                    label: `投資額（${symbolDisplayName}）`,
+                                    data: result1.monthlyData.map(d => d.investment),
+                                    borderColor: 'rgb(75, 192, 192)',
+                                    fill: false
+                                },
+                                {
+                                    label: `ポートフォリオ価値（${symbolDisplayName}）`,
+                                    data: result1.monthlyData.map(d => d.portfolioValue),
+                                    borderColor: 'rgb(255, 99, 132)',
+                                    fill: false
+                                }
+                            ]
+                        },
+                        options: options
+                    });
+                }
+            }
+
+            // --- INITIALIZATION & EVENT LISTENERS ---
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1);
+            const minDate = new Date('2000-01-01');
+
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+
+            startDateInput.min = minDate.toISOString().split('T')[0];
+            startDateInput.max = yesterday.toISOString().split('T')[0];
+            endDateInput.min = minDate.toISOString().split('T')[0];
+            endDateInput.max = yesterday.toISOString().split('T')[0];
+
+            const fiveYearsAgo = new Date(today);
+            fiveYearsAgo.setFullYear(today.getFullYear() - 5);
+            startDateInput.value = fiveYearsAgo.toISOString().split('T')[0];
+            endDateInput.value = yesterday.toISOString().split('T')[0];
+
+            startDateInput.addEventListener('change', function() {
+                endDateInput.min = this.value;
+                if (endDateInput.value < this.value) {
+                    endDateInput.value = this.value;
+                }
+            });
+
+            endDateInput.addEventListener('change', function() {
+                startDateInput.max = this.value;
+                if (startDateInput.value > this.value) {
+                    startDateInput.value = this.value;
+                }
+            });
+
+            document.getElementById('add-symbol-btn').onclick = addSymbolBlock;
+            
+            document.getElementById('backtestForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                // UIリセット
+                document.getElementById('errorAlert').style.display = 'none';
+                document.getElementById('result-section').style.display = 'none';
+
+                const symbols = [];
+                const symbolBlocks = document.querySelectorAll('#symbol-inputs .symbol-block');
+                for(let i = 0; i < symbolBlocks.length; i++) {
+                    const block = symbolBlocks[i];
+                    const symbolId = i + 1;
+                    const symbol = block.querySelector(`#symbol${symbolId}`).value;
+                    if (symbol) {
+                        symbols.push({
+                            symbol: symbol,
+                            initialInvestment: parseFloat(block.querySelector(`#initialInvestment${symbolId}`).value),
+                            monthlyInvestment: parseFloat(block.querySelector(`#monthlyInvestment${symbolId}`).value)
+                        });
+                    }
+                }
+                
+                if (symbols.length === 0) {
+                    document.getElementById('errorMessage').textContent = '少なくとも1つの銘柄を選択してください。';
+                    document.getElementById('errorAlert').style.display = 'block';
+                    return;
+                }
+
+                const request = {
+                    symbols: symbols,
+                    startDate: document.getElementById('startDate').value,
+                    endDate: document.getElementById('endDate').value
+                };
+                
+                try {
+                    const response = await fetch('/backtest', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(request)
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(errorText || 'サーバーとの通信に失敗しました。');
+                    }
+                    
+                    const result = await response.json();
+                    displayResults(result);
+                } catch (error) {
+                    document.getElementById('errorMessage').textContent = error.message;
+                    document.getElementById('errorAlert').style.display = 'block';
+                }
+            });
+
+            // --- INITIALIZE ---
+            addSymbolBlock();
+        });
+        
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('ja-JP', {
+                style: 'currency',
+                currency: 'JPY',
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+        
+        function formatPercentage(value) {
+            return new Intl.NumberFormat('ja-JP', {
+                style: 'percent',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(value / 100);
+        }
+    </script>
+</body>
+</html> 
