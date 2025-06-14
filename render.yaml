@@ -1,7 +1,0 @@
-services:
-  - type: web
-    name: backtest-app
-    env: java
-    build:
-      buildCommand: "mvn clean install"
-    startCommand: "java -jar target/backtest-app-0.0.1-SNAPSHOT.jar" 

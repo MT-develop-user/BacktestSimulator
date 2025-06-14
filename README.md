@@ -10,7 +10,7 @@
 ### 2.1. デモサイト
 
 - [`https://backtestsimulator.onrender.com`](https://backtestsimulator.onrender.com)
-※ <font color="red">Render.comのhobby版でデプロイしているため、動作に不具合が生じる可能性あり。</font>
+※ <font color="red">**Render.comのhobby版でデプロイしているため、動作に不具合が生じる可能性あり。**</font>
 
 ### 2.2. 画像サンプル
 
