@@ -10,7 +10,8 @@
 ### 2.1. デモサイト
 
 - [`https://backtestsimulator.onrender.com`](https://backtestsimulator.onrender.com)
-※ <font color="red">**Render.comのhobby版でデプロイしているため、動作に不具合が生じる可能性あり。**</font>
+
+**※ Render.comのhobby版でデプロイしているため、動作に不具合が生じる可能性あり。**
 
 ### 2.2. 画像サンプル
 
@@ -47,7 +48,7 @@ mvn spring-boot:run
 
 ### 4.2. （予備手順）別のターミナルから停止させる。
 
-> ※ 手順4.1でアプリケーションが正常に停止できた場合、手順4.2は実施不要となる。
+`※ 手順4.1でアプリケーションが正常に停止できた場合、手順4.2は実施不要となる。`
 
 新規ターミナルを開き、以下のWindowsコマンドを実行することで、実行中のSpring Bootアプリケーションを停止させる。
 ```sh
