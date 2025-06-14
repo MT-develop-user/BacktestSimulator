@@ -26,5 +26,5 @@ COPY --from=build /app/target/*.jar app.jar
 # Expose the port the application will run on
 EXPOSE 8080
 
-# Command to run the application
-ENTRYPOINT ["java", "-jar", "app.jar"] 
+# Command to run the application with memory limits
+ENTRYPOINT ["java", "-Xmx256m", "-jar", "app.jar"] 

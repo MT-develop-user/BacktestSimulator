@@ -7,10 +7,16 @@
 
 ## 2. 本アプリケーションのイメージ
 
-以下の画像サンプルを参照。
-- [`README_reference/image_01.png`](README_reference/image_01.png)  ⇒起動直後のイメージ。
-- [`README_reference/image_02.png`](README_reference/image_02.png)  ⇒ユーザー入力後のイメージ。（最大5銘柄まで入力可能）
-- [`README_reference/image_03.png`](README_reference/image_03.png)  ⇒バックテスト実行後のイメージ。（各種算出結果、円グラフ、折れ線グラフ）
+### 2.1. デモサイト
+
+- [`https://backtestsimulator.onrender.com`](https://backtestsimulator.onrender.com)
+※ <font color="red">Render.comのhobby版でデプロイしているため、動作に不具合が生じる可能性あり。</font>
+
+### 2.2. 画像サンプル
+
+- [`README_reference/image_01.png`](README_reference/image_01.png)　⇒起動直後のイメージ。
+- [`README_reference/image_02.png`](README_reference/image_02.png)　⇒ユーザー入力後のイメージ。（最大5銘柄まで入力可能）
+- [`README_reference/image_03.png`](README_reference/image_03.png)　⇒バックテスト実行後のイメージ。（各種算出結果、円グラフ、折れ線グラフ）
 
 ## 3. 本アプリケーションの起動方法
 
@@ -31,8 +37,7 @@ mvn spring-boot:run
 ### 3.3. ブラウザからローカルホストにアクセスする。
 
 ブラウザのアドレスバーに以下を入力する。
-
-<http://localhost:8080/>
+- [`http://localhost:8080/`](http://localhost:8080/)
 
 ## 4. 本アプリケーションの停止方法
 
