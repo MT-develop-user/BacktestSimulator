@@ -8,9 +8,9 @@
 ## 2. 本アプリケーションのイメージ
 
 以下の画像サンプルを参照。
-- [`README_reference/image_01.png`](README_reference/image_01.png)　⇒起動直後のイメージ。
-- [`README_reference/image_02.png`](README_reference/image_02.png)　⇒ユーザー入力後のイメージ。（最大5銘柄まで入力可能）
-- [`README_reference/image_03.png`](README_reference/image_03.png)　⇒バックテスト実行後のイメージ。（各種算出結果、円グラフ、折れ線グラフ）
+- [`README_reference/image_01.png`](README_reference/image_01.png)  ⇒起動直後のイメージ。
+- [`README_reference/image_02.png`](README_reference/image_02.png)  ⇒ユーザー入力後のイメージ。（最大5銘柄まで入力可能）
+- [`README_reference/image_03.png`](README_reference/image_03.png)  ⇒バックテスト実行後のイメージ。（各種算出結果、円グラフ、折れ線グラフ）
 
 ## 3. 本アプリケーションの起動方法
 
