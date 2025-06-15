@@ -11,7 +11,7 @@
 
 - [`https://backtestsimulator.onrender.com`](https://backtestsimulator.onrender.com)
 
-**※ Render.comのhobby版でデプロイしているため、動作に不具合が生じる可能性あり。**
+**※ Render.comのhobby版でデプロイしているため、起動まで1分程度かかる場合がある。また、Render.comサーバーのリソースの問題で、動作に不具合が生じる可能性あり。**
 
 ### 2.2. 画像サンプル
 
